@@ -1,10 +1,9 @@
 ---
-
-## name: gauss-langchain-integration description: | Gauss LLM을 LangChain/LangGraph에 통합하는 스킬. Gauss 커스텀 LLM 래핑, ReAct 에이전트 구축, LangGraph StateGraph 패턴, MCP 어댑터 연동, 일반 도구(Python 실행, 셸, 웹 검색 등) 구현에 사용. Gauss는 이 환경에서 유일하게 사용하는 LLM이며, 네이티브 tool_call을 지원하지 않아 ReAct 프롬프트 텍스트 파싱 방식을 사용합니다. Use when: gauss, langchain, langgraph, react agent, tool calling, custom llm, mcp adapter, 가우스, 랭체인, 랭그래프, 에이전트, 도구호출, 도구 호출, 커스텀 LLM
+name: gauss-langchain-integration 
+description: Gauss LLM을 LangChain/LangGraph에 통합하는 스킬. Gauss 커스텀 LLM 래핑, ReAct 에이전트 구축, LangGraph StateGraph 패턴, MCP 어댑터 연동, 일반 도구(Python 실행, 셸, 웹 검색 등) 구현에 사용. Gauss는 이 환경에서 유일하게 사용하는 LLM이며, 네이티브 tool_call을 지원하지 않아 ReAct 프롬프트 텍스트 파싱 방식을 사용합니다. Use when: gauss, langchain, langgraph, react agent, tool calling, custom llm, mcp adapter, 가우스, 랭체인, 랭그래프, 에이전트, 도구호출, 도구 호출, 커스텀 LLM
+---
 
 # Gauss + LangChain/LangGraph 통합 가이드
-
----
 
 ## 모든 작업의 시작점: Gauss 3단계 필수 절차
 
@@ -13,12 +12,15 @@
 **Step 1: ChatGauss 래퍼 준비** (항상 먼저)
 
 - `templates/gauss_llm.py`를 프로젝트에 복사
+
 - `templates/.env.example`을 `.env`로 복사 후 실제 값 입력:
 
   ```
   cp templates/.env.example .env
   ```
+
 - 환경변수 5개 필수 설정: `GAUSS_ENDPOINT`, `GAUSS_CLIENT_KEY`, `GAUSS_PASS_KEY`, `GAUSS_EMAIL`, `GAUSS_MODEL_ID`
+
 - `.env`는 절대 git 커밋 금지 — `.gitignore`에 추가
 
 ```python
