@@ -30,7 +30,11 @@ import os
 from typing import Any, Iterator, List, Optional
 
 import requests
+import urllib3
 from dotenv import load_dotenv
+
+# 사내망 환경에서 verify=False 사용 시 발생하는 SSL 경고 비활성화
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # 모듈 임포트 시 .env 파일을 자동으로 로드합니다.
 # 프로젝트 루트의 .env 파일을 우선적으로 탐색합니다.
