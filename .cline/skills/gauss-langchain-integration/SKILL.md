@@ -72,7 +72,7 @@ llm = ChatGauss.from_env()  # 모든 LangChain 코드에서 이 llm을 사용
 | --- | --- |
 | 엔드포인트 | `{ENDPOINT}/openapi/chat/v1/messages` (POST) |
 | 모델 목록 | `{ENDPOINT}/openapi/chat/v1/models` (GET) |
-| 인증 헤더 | `x-generative-ai-client`, `x-openapi-koten`, `x-generative-ai-user-email` |
+| 인증 헤더 | `x-generative-ai-client`, `x-openapi-token`, `x-generative-ai-user-email` |
 | 요청 본문 | `modelIds`(array), `contents`(list\[str\]), `llmConfig`, `isStream`, `systemPrompt` |
 | 응답 | `content`(답변), `status`, `responseCode` |
 | 스트리밍 | SSE, `event_status: "CHUNK"`, `content` 필드로 청크 수신 |
@@ -160,7 +160,8 @@ pip install sseclient-py            # Gauss 스트리밍
 2. **systemPrompt 분리**: 시스템 메시지는 `contents`가 아닌 `systemPrompt` 필드로 별도 전달
 3. **JSON 출력 안정성**: Gauss가 ReAct JSON 형식을 안정적으로 출력하지 못할 수 있음 → Few-shot 예제 필수, 파싱 실패 시 재시도 로직 구현
 4. **토큰 비용**: ReAct는 각 도구 호출마다 전체 LLM 라운드트립 필요 → 불필요한 도구 호출 최소화
-5. **헤더 키 확인**: `x-openapi-koten`은 실제 API 키 이름 (오타가 아님)
+5. **헤더 키 확인**: `x-openapi-token`이 올바른 인증 헤더 이름입니다
+6. **프록시 우회**: 사내망에서는 `proxies={'http': None, 'https': None}` 및 `verify=False` 필수 — `ChatGauss`가 기본값으로 자동 적용
 
 ## 파일 구조
 

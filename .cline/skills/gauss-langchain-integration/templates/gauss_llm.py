@@ -46,6 +46,10 @@ class ChatGauss(BaseChatModel):
 
     Gauss는 네이티브 tool_call을 지원하지 않으므로,
     ReAct 프롬프트 기반 도구 호출과 함께 사용해야 합니다.
+
+    사내망 환경에서는 프록시 우회 설정이 필요합니다.
+    proxies 파라미터로 프록시 설정을 제어할 수 있으며,
+    기본값은 사내 Gauss 시스템에 맞게 프록시를 비활성화합니다.
     """
 
     endpoint_url: str
@@ -64,6 +68,16 @@ class ChatGauss(BaseChatModel):
 
     # 요청 타임아웃 (초)
     request_timeout: int = 120
+
+    # 프록시 설정: 사내망에서는 프록시를 비활성화해야 Gauss 서버에 접근 가능
+    # None으로 설정하면 해당 프로토콜의 프록시를 우회합니다.
+    proxies: Optional[dict] = None
+
+    def model_post_init(self, __context: Any) -> None:
+        """인스턴스 초기화 후 프록시 기본값을 설정합니다."""
+        if self.proxies is None:
+            # 사내 Gauss 시스템 기본값: HTTP/HTTPS 프록시 모두 비활성화
+            object.__setattr__(self, "proxies", {"http": None, "https": None})
 
     @classmethod
     def from_env(cls) -> "ChatGauss":
@@ -98,7 +112,7 @@ class ChatGauss(BaseChatModel):
         return {
             "Content-Type": "application/json",
             "x-generative-ai-client": self.client_key,
-            "x-openapi-koten": self.pass_key,
+            "x-openapi-token": self.pass_key,
             "x-generative-ai-user-email": self.user_email,
         }
 
@@ -164,11 +178,14 @@ class ChatGauss(BaseChatModel):
         body = self._build_body(messages, stop, is_stream=False)
         api_url = f"{self.endpoint_url}/openapi/chat/v1/messages"
 
+        # 사내망 환경: 프록시 우회 및 SSL 검증 비활성화 적용
         response = requests.post(
             api_url,
             headers=self._build_headers(),
             json=body,
             timeout=self.request_timeout,
+            proxies=self.proxies,
+            verify=False,
         )
         response.raise_for_status()
 
@@ -206,12 +223,15 @@ class ChatGauss(BaseChatModel):
         body = self._build_body(messages, stop, is_stream=True)
         api_url = f"{self.endpoint_url}/openapi/chat/v1/messages"
 
+        # 사내망 환경: 프록시 우회 및 SSL 검증 비활성화 적용
         response = requests.post(
             api_url,
             headers=self._build_headers(),
             json=body,
             timeout=self.request_timeout,
             stream=True,
+            proxies=self.proxies,
+            verify=False,
         )
         response.raise_for_status()
 

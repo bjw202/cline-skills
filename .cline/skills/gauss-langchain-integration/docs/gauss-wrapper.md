@@ -121,10 +121,27 @@ def _stream(self, messages, stop=None, run_manager=None, **kwargs):
 headers = {
     "Content-Type": "application/json",
     "x-generative-ai-client": CLIENT_KEY,      # 클라이언트 키
-    "x-openapi-koten": PASS_KEY,                # 패스 키 (주의: 'token'이 아닌 'koten')
-    "x-generative-ai-user-email": USER_EMAIL,   # 사용자 이메일
+    "x-openapi-token": PASS_KEY,               # 패스 키
+    "x-generative-ai-user-email": USER_EMAIL,  # 사용자 이메일
 }
 ```
+
+## 프록시 설정 (사내망 필수)
+
+Gauss 서버는 사내망에서 운영되므로 프록시 우회 설정이 필요합니다. `ChatGauss`는 기본값으로 자동 적용합니다.
+
+```python
+# 기본값: 사내망 프록시 우회 자동 적용 (별도 설정 불필요)
+gauss = ChatGauss.from_env()
+
+# 커스텀 프록시 설정이 필요한 경우
+gauss = ChatGauss(
+    ...,
+    proxies={"http": None, "https": None},  # 프록시 비활성화 (기본값)
+)
+```
+
+`_generate()`와 `_stream()` 양쪽 모두 `proxies` 및 `verify=False`가 적용됩니다.
 
 ## llmConfig 파라미터 설명
 
