@@ -1,6 +1,10 @@
 ---
 
-## name: builder-skill description: Cline 스킬을 새로 만들거나 외부 스킬 문서를 Cline 형식으로 변환하는 메타 스킬. 새 스킬 생성, 스킬 구조 설계, 외부 문서 → Cline 형식 변환에 사용. Use when: skill creation, new skill, builder, 스킬생성, 새스킬, 스킬제작, 스킬만들기, convert skill, 스킬변환, cline skill, 스킬 구조, skill structure, skill builder
+name: builder-skill 
+
+description: Cline 스킬을 새로 만들거나 외부 스킬 문서를 Cline 형식으로 변환하는 메타 스킬. 새 스킬 생성, 스킬 구조 설계, 외부 문서 → Cline 형식 변환에 사용. Use when: skill creation, new skill, builder, 스킬생성, 새스킬, 스킬제작, 스킬만들기, convert skill, 스킬변환, cline skill, 스킬 구조, skill structure, skill builder
+
+---
 
 # Cline 스킬 빌더
 
