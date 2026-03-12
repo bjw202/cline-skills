@@ -46,7 +46,8 @@ cline skill, 스킬변환, convert skill, skill builder
 | SKILL.md | 필수 | 진입점, 라우팅, 핵심 절차 |
 | docs/guide.md | 복잡한 경우 | 상세 단계별 가이드 |
 | docs/reference.md | API/규칙 있을 경우 | 형식 명세, 제약사항 |
-| templates/example | 보일러플레이트 있을 경우 | 복사하여 쓸 파일 |
+| scripts/helper.py | 실행 스크립트 있을 경우 | Cline이 execute_command로 실행하는 스크립트 |
+| templates/example | 복사용 보일러플레이트 있을 경우 | 사용자가 직접 복사하는 파일 |
 
 ---
 
@@ -134,6 +135,81 @@ SKILL.md 상단(제목 바로 아래)에 라우팅 테이블을 배치합니다.
 | 절차 없이 정보만 나열 | Cline이 무엇을 해야 할지 모름 | 명확한 단계(Step 1, 2, 3) 제공 |
 | 제약사항 미명시 | 불가능한 방법을 시도하게 됨 | 제약과 대안을 명확히 표기 |
 | 영어 키워드만 작성 | 한국어 요청 시 발동 안 됨 | 한국어 키워드 반드시 포함 |
+| **도구 이름 미명기** | **도구가 발동되지 않음** | **각 Step에 Cline 도구명 명시** |
+
+---
+
+## Phase 2-5: 도구 명기 규칙 (필수)
+
+> **핵심 규칙**: Cline은 자연어만으로는 도구를 발동하지 않을 수 있습니다. 각 Step에서 사용할 도구를 반드시 명시하세요.
+
+### 잘못된 작성 vs 올바른 작성
+
+**사용자 질문**
+```markdown
+❌ 잘못된 예:
+사용자에게 스킬명을 물어봅니다.
+
+✅ 올바른 예:
+ask_followup_question 도구를 사용하여 사용자에게 질문합니다:
+"새로 만들 스킬의 이름은 무엇인가요? (kebab-case로 입력)"
+```
+
+**파일 생성**
+```markdown
+❌ 잘못된 예:
+SKILL.md를 만들어라.
+
+✅ 올바른 예:
+write_to_file 도구로 `.cline/skills/{스킬명}/SKILL.md`를 생성합니다.
+내용:
+---
+name: {스킬명}
+...
+```
+
+**파일 읽기**
+```markdown
+❌ 잘못된 예:
+기존 파일을 확인합니다.
+
+✅ 올바른 예:
+read_file 도구로 `{경로}` 파일을 읽어 내용을 확인합니다.
+```
+
+**명령어 실행**
+```markdown
+❌ 잘못된 예:
+패키지를 설치합니다.
+
+✅ 올바른 예:
+execute_command 도구로 다음을 실행합니다:
+pip install -r requirements.txt
+```
+
+**디렉토리 조회**
+```markdown
+❌ 잘못된 예:
+기존 스킬 목록을 확인합니다.
+
+✅ 올바른 예:
+list_files 도구로 `.cline/skills/` 디렉토리를 조회하여
+기존 스킬 목록을 확인합니다.
+```
+
+### 도구 명기 체크리스트
+
+각 Step을 작성한 후 아래를 확인하세요:
+
+- [ ] 파일을 읽는 Step → `read_file 도구로` 명시되어 있는가?
+- [ ] 파일을 생성하는 Step → `write_to_file 도구로` 명시되어 있는가?
+- [ ] 파일을 수정하는 Step → `replace_in_file 도구로` 명시되어 있는가?
+- [ ] 명령어 실행 Step → `execute_command 도구로` 명시되어 있는가?
+- [ ] 사용자 질문 Step → `ask_followup_question 도구를 사용하여` 명시되어 있는가?
+- [ ] 디렉토리 조회 Step → `list_files 도구로` 명시되어 있는가?
+- [ ] 내용 검색 Step → `search_files 도구로` 명시되어 있는가?
+
+도구별 상세 사용법: `docs/cline-tools-reference.md`
 
 ---
 
@@ -180,17 +256,71 @@ SKILL.md 상단(제목 바로 아래)에 라우팅 테이블을 배치합니다.
 
 ---
 
-## Phase 4: templates/ 작성
+## Phase 4: scripts/ 작성
 
 ### 4-1. 포함 기준
 
-다음 조건에 해당하면 templates/에 파일을 추가합니다.
+다음 조건에 해당하면 scripts/에 파일을 추가합니다.
 
-- 사용자가 그대로 복사하여 사용할 수 있는 파일
-- 반복적으로 사용될 보일러플레이트 코드
-- 설정 파일 예제
+- Cline이 `execute_command`로 실행해야 하는 스크립트
+- 반복 실행이 필요한 자동화 작업
+- 복잡한 파일 처리나 변환 로직
+
+**`scripts/` vs `templates/` 구분:**
+
+| 구분 | 내용 | 사내 예시 |
+| --- | --- | --- |
+| `scripts/` | Cline이 실행하는 스크립트 | `add_slide.py`, `new-skill.sh` |
+| `templates/` | 사용자가 복사하는 파일 | `SKILL.md.template`, `.env.example` |
 
 ### 4-2. 파일 작성 규칙
+
+```python
+# scripts/helper.py
+# 용도: {이 스크립트의 목적}
+# 사용법: python scripts/helper.py {인수}
+#
+# 인수:
+# - {ARG_A}: {설명}
+
+import sys
+
+def main():
+    # ... 실제 로직 ...
+    pass
+
+if __name__ == "__main__":
+    main()
+```
+
+```bash
+#!/bin/bash
+# scripts/setup.sh
+# 용도: {이 스크립트의 목적}
+# 사용법: bash scripts/setup.sh {인수}
+
+set -e
+# ... 실제 로직 ...
+```
+
+### 4-3. SKILL.md에서 scripts/ 참조
+
+```markdown
+**Step N: 스크립트 실행**
+다음 명령어를 실행합니다:
+```bash
+python .cline/skills/{스킬명}/scripts/helper.py {인수}
+```
+실행 결과를 확인하고 오류가 있으면 수정합니다.
+```
+
+---
+
+## Phase 4-1: templates/ 작성 (선택)
+
+templates/는 사용자가 직접 복사하여 쓰는 보일러플레이트 파일에 사용합니다.
+
+### 파일 작성 규칙
 
 ```python
 # templates/example.py
@@ -232,7 +362,17 @@ SKILL.md 상단(제목 바로 아래)에 라우팅 테이블을 배치합니다.
 
 - [ ] 파일명이 내용을 명확히 반영하는가?
 
-### templates/ 검증
+### scripts/ 검증
+
+- [ ] 파일 상단에 용도와 사용법 주석이 있는가?
+
+- [ ] 스크립트가 독립 실행 가능한가?
+
+- [ ] 실행 권한이 부여되었는가? (`.sh` 파일의 경우 `chmod +x`)
+
+- [ ] SKILL.md에서 올바른 실행 경로로 참조되는가?
+
+### templates/ 검증 (해당 시)
 
 - [ ] 파일 상단에 용도 주석이 있는가?
 
@@ -254,9 +394,21 @@ SKILL.md 상단(제목 바로 아래)에 라우팅 테이블을 배치합니다.
 
 새 스킬 생성 시 실행할 명령어 순서입니다.
 
+**방법 1: 스크립트 사용 (권장)**
+
 ```bash
-# 1. 디렉토리 생성
+# builder-skill 스크립트로 표준 구조 자동 생성
+bash .cline/skills/builder-skill/scripts/new-skill.sh {스킬명}
+```
+
+**방법 2: 수동 생성**
+
+```bash
+# 1. 디렉토리 생성 (프로젝트 규약: docs + scripts)
 mkdir -p .cline/skills/{스킬명}/docs
+mkdir -p .cline/skills/{스킬명}/scripts
+
+# 필요한 경우 templates/ 추가
 mkdir -p .cline/skills/{스킬명}/templates
 
 # 2. SKILL.md 템플릿 복사 (이 스킬의 templates에서)
